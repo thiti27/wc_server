@@ -44,7 +44,12 @@ exports.findJob = (req, res, next) => {
                     [Op.or]: [3, 4]
                 },
             },
-            order: Sequelize.literal("post_date DESC"),
+            order: [
+                ['active', 'ASC'],
+                ['post_date', 'DESC'],
+
+            ],
+
             limit: 50,
 
 
