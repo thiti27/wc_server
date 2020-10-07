@@ -21,14 +21,6 @@ module.exports = {
             },
             timezone: '+07:00'
         }
-    },
-    edsServiceConfig: {
-        urlUser: 'http://159.228.251.234:8080/EDSService/ws-services/userService?wsdl',
-        urlEmployee: 'http://159.228.251.234:8080/EDSService/ws-services/employeeService?wsdl',
-        urlSection: 'http://159.228.251.234:8080/EDSService/ws-services/sectionService?wsdl'
-    },
-    jwtConfig: {
-        JWT_SECRET: 'Daicel Thailand',
-        JWT_EXP: '1D'
     }
+  
 };

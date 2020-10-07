@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../../config/mysql');
 
-const content_news = sequelize.define(
+const content_images = sequelize.define(
     "content_images",
     {
         image_id :{
@@ -40,4 +40,4 @@ const content_news = sequelize.define(
     }
 );
 
-module.exports = content_news
+module.exports = content_images

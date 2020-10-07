@@ -2,13 +2,8 @@ const express = require('express');
 const morgan = require('morgan');
 const compression = require('compression');
 const bodyParser = require('body-parser');
-// const realtime = require('../app/controllers/realtime.controller');
-// const UserController = require('../app/controllers/user.controller');
 const cors = require('cors');
-const passport = require('passport');
-const jwt = require('./jwt');
 const { handleError } = require('../helpers/error-handler');
-require('./passport');
 
 module.exports = () => {
     const app = express();
@@ -36,24 +31,10 @@ module.exports = () => {
         next();
     });
 
-    // realtime.connect(server, '/tracking-system', (req, res, next) => {
-    //     next();
-    // });
-
-    app.use(passport.initialize());
-
-    app.post('/login', (req, res, next) => {
-        passport.authenticate('local', (err, user, info) => {
-            if (err) return next(err);
-            if (user) return res.json({ 'token': jwt.generateJwt(), 'userLogin': user });
-            return res.json(info);
-        })(req, res);
-    });
     app.use(express.static('./public'))
-
     app.use('/api/post', require('../app/routes/post.routes')());
     app.use('/api/images', require('../app/routes/images.routes')());
-    
+    app.use('/api/user', require('../app/routes/user.routes')());
 
     app.use((err, req, res, next) => {
         handleError(err, res);
