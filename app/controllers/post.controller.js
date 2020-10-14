@@ -8,9 +8,54 @@ const fs = require("fs-extra");
 const { Op } = require('sequelize');
 const Sequelize = require('../../config/mysql');
 
-exports.findId = (req, res, next) => {
+exports.findId = async(req, res, next) => {
+    
     try {
-        news.findByPk(req.params.id).then(results => res.json(results)).catch(err => next(err));
+        let result = await news.findAll({
+
+            where: {
+                [Op.or]: [
+                    {
+                        event_name_en: {
+                            [Op.like]: `%${req.params.id}%`
+                        },
+
+                    },
+                    {
+                        event_name_th: { [Op.like]: `%${req.params.id}%` }
+                    },
+                ],
+              
+
+
+            }
+        });
+        res.json(result[0]);
+
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.findJobId = async(req, res, next) => {
+    try {
+        
+        let results = await news.findOne({ 
+            where: {
+                        event_id : req.params.id,
+                        active: {
+                            [Op.or]: [3, 4]
+                        },
+                    },
+                }
+
+        )
+        if (results) {
+            res.json(results)
+        } else {
+            res.json(null);
+        }
+
     } catch (err) {
         next(err);
     }
@@ -90,9 +135,7 @@ exports.findSetting = (req, res, next) => {
 exports.add = async (req, res) => {
 
     try {
-        console.log(req.body.published_date )
         let fields = req.body || {};
-        console.log( fields)
         let result = await news.create(fields)
         res.json({
             message: JSON.stringify(result.event_id)
@@ -103,7 +146,6 @@ exports.add = async (req, res) => {
     }
 
 };
-
 
 exports.findContentId = (req, res) => {
 
@@ -506,7 +548,7 @@ exports.getLast = async (req, res) => {
                     [Op.or]: [1, 2]
                 },
 
-            }, order: Sequelize.literal("published_date DESC")
+            }, order: Sequelize.literal("event_datetime DESC")
             , limit: 20
         })
         res.json(result)
@@ -529,7 +571,7 @@ exports.getCsr = async (req, res) => {
                 },
                 csr: 1
 
-            }, order: Sequelize.literal("published_date DESC")
+            }, order: Sequelize.literal("event_datetime DESC")
             , limit: 20
         })
 
@@ -554,7 +596,7 @@ exports.getNews = async (req, res) => {
                 },
                 com_news: 1
 
-            }, order: Sequelize.literal("published_date DESC")
+            }, order: Sequelize.literal("event_datetime DESC")
             , limit: 20
         })
 
@@ -577,7 +619,7 @@ exports.getEvents = async (req, res) => {
                 },
                 events: 1
 
-            }, order: Sequelize.literal("published_date DESC")
+            }, order: Sequelize.literal("event_datetime DESC")
             , limit: 20
         })
 
@@ -618,10 +660,16 @@ exports.getRecent = async (req, res) => {
 exports.getMonth = async (req, res) => {
     let min = await news.findAll({
         attributes: [[Sequelize.fn('min', Sequelize.col('published_date')), 'date']],
+        active: {
+            [Op.or]: [1, 2]
+        }
     });
 
     let max = await news.findAll({
         attributes: [[Sequelize.fn('max', Sequelize.col('published_date')), 'date']],
+        active: {
+            [Op.or]: [1, 2]
+        }
     });
     var a = min[0].dataValues.date.split("-");
     var b = max[0].dataValues.date.split("-");
@@ -649,7 +697,10 @@ exports.getMonth = async (req, res) => {
 
 exports.getStart = async (req, res) => {
     let min = await news.findAll({
-        attributes: [[Sequelize.fn('min', Sequelize.col('published_date')), 'date']],
+        attributes: [[Sequelize.fn('min', Sequelize.col('event_datetime')), 'date']],
+        active: {
+            [Op.or]: [1, 2]
+        }
 
     });
     var a = min[0].dataValues.date.split("-");
@@ -657,7 +708,10 @@ exports.getStart = async (req, res) => {
 };
 exports.getEnd = async (req, res) => {
     let min = await news.findAll({
-        attributes: [[Sequelize.fn('max', Sequelize.col('published_date')), 'date']]
+        attributes: [[Sequelize.fn('max', Sequelize.col('event_datetime')), 'date']],
+        active: {
+            [Op.or]: [1, 2]
+        }
     });
     var a = min[0].dataValues.date.split("-");
     res.json(a);
@@ -668,10 +722,10 @@ exports.getYear = async (req, res) => {
         where: {
 
             published_date: {
-                [Op.and]: [Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('published_date')), req.params.y.split(',')[0])
+                [Op.and]: [Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('event_datetime')), req.params.y.split(',')[0])
 
 
-                    , Sequelize.where(Sequelize.fn('month', Sequelize.col('published_date')), req.params.y.split(',')[1])]
+                    , Sequelize.where(Sequelize.fn('month', Sequelize.col('event_datetime')), req.params.y.split(',')[1])]
             }
         }
     });
@@ -685,8 +739,8 @@ exports.getPostYear = async (req, res) => {
             where: {
                 published_date: {
                     [Op.and]: [
-                        Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('published_date')), req.params.y.split(',')[0])
-                        , Sequelize.where(Sequelize.fn('month', Sequelize.col('published_date')), req.params.y.split(',')[1]),
+                        Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('event_datetime')), req.params.y.split(',')[0])
+                        , Sequelize.where(Sequelize.fn('month', Sequelize.col('event_datetime')), req.params.y.split(',')[1]),
 
                     ]
 
@@ -697,7 +751,7 @@ exports.getPostYear = async (req, res) => {
 
         ckmonth = []
         for (let i = 0; i < month.length; i++) {
-            ckmonth.push(new Date(month[i].dataValues['published_date']) <= new Date())
+            ckmonth.push(new Date(month[i].dataValues['event_datetime']) <= new Date())
         }
         res.json({
             month: month, date: ckmonth
@@ -826,7 +880,7 @@ exports.getByDateType = async (req, res) => {
 
                     [Op.and]: [
                         {
-                            "published_date": keyword
+                            "event_datetime": keyword
 
                         },
                         {
@@ -850,7 +904,7 @@ exports.getByDateType = async (req, res) => {
 
                     [Op.and]: [
                         {
-                            "published_date": keyword
+                            "event_datetime": keyword
 
                         },
                         {
@@ -874,7 +928,7 @@ exports.getByDateType = async (req, res) => {
 
                     [Op.and]: [
                         {
-                            "published_date": keyword
+                            "event_datetime": keyword
 
                         },
                         {

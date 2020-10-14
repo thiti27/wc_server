@@ -4,6 +4,7 @@ module.exports = () => {
     const postController = require('../controllers/post.controller');
     const router = express.Router();
 
+    router.route('/job/:id').get(postController.findJobId);
     router.route('/:id').get(postController.findId);
     router.route('/').get(postController.find);
     router.route('/job').post(postController.findJob);
