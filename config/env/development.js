@@ -1,10 +1,10 @@
 module.exports = {
     dbConnectionConfig: {
-        database: 'wc_db',
-        user: 'root',
-        password: '1234',
+        database: 'IxJIbPqSgm',
+        user: 'IxJIbPqSgm',
+        password: 'LOx8ot3ZyM',
         options: {
-            host: 'localhost',
+            host: 'remotemysql.com',
             dialect: 'mysql',
             dialectOptions: {
                 dateStrings: true,
