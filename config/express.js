@@ -40,10 +40,6 @@ module.exports = () => {
         handleError(err, res);
     });
 
-    app.get('/', (req,res) => {
-        res.send('Welcome to Daily Code Buffer in Heroku Auto Deployment!!');
-    })
-
 
 
     return server;
